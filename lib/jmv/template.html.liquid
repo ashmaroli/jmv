@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>{{ app.name }}</title>
+    <style>
+      :root {
+        --dark-gray: #454545;
+        --gray: #757575;
+        --light-gray: #eeeeee;
+        --off-white: #fcfcfc;
+        --white: #ffffff;
+        --red: #b30404;
+        --light-red: #ecd7d7;
+        --pale-red: #fbf9f9;
+      }
+
+      * { box-sizing: border-box }
+      body {
+        margin: 0;
+        font-family: Roboto, sans-serif;
+        line-height: 1.25;
+        color: var(--red);
+        background: var(--pale-red);
+      }
+      header {
+        margin-bottom: 30px;
+        padding: 15px;
+        background: var(--off-white);
+        border-bottom: 1px solid var(--light-gray);
+      }
+      h2 {
+        margin: 0;
+        font-size: 1.125em;
+        color: var(--red);
+        text-align: center;
+      }
+      main {
+        height: calc(100vh - 195px);
+        overflow-y: auto;
+        overflow-x: hidden;
+
+      }
+      ul {
+        margin: 0;
+        padding-left: 0.5em ;
+        list-style: none;
+      }
+      footer {
+        margin-top: 30px;
+        padding: 15px;
+        color: var(--red);;
+        font-size: 0.8em;
+        text-align: center;
+        background: var(--off-white);
+        border-top: 1px solid var(--light-gray);
+      }
+      footer a { color: var(--red) }
+      .toggles {
+        margin-left: 30px;
+        position: fixed;
+      }
+      .toggle-btn {
+        margin: 8px 15px;
+        padding: 8px 15px;
+        font-size: 0.8em;
+        cursor: pointer;
+        border: 1px solid var(--light-red);
+        border-radius: 15px 5px;
+      }
+      #toggle-collapse:after { content: 'Collapse All' }
+      #toggle-collapse.collapsed:after { content: 'Expand All' }
+      #toggle-json:after { content: 'View JSON' }
+      #toggle-json.active:after { content: 'Hide JSON' }
+      .container {
+        max-width: 960px;
+        width: calc(100% - 400px);
+        margin: 0 auto;
+      }
+      .wrapper {
+        width: calc(100% - 30px);
+        height: calc(100vh - 200px);
+        overflow: auto;
+      }
+      .entry {
+        margin-bottom: 3px;
+        padding: 10px 15px;
+        background: var(--off-white);
+        transition: all 0.5s;
+      }
+      .entry, .entry.togglable.collapsed {
+        border: 1px solid var(--light-gray);
+      }
+      .entry.togglable {
+        background: var(--white);
+        border-color: var(--light-red);
+      }
+      .entry.togglable:hover .name { color: var(--red) }
+      .deps {
+        width: calc(100% - 25px);
+        padding-top: 2px;
+        color: var(--dark-gray);
+        overflow: hidden;
+      }
+      .deps li {
+        padding-left: 15px;
+        border-left: 1px dotted var(--light-red);
+      }
+      .chevron {
+        width: 25px;
+        max-height: 20px;
+        vertical-align: middle;
+        text-align: center;
+      }
+      .hidden { display: none }
+      .path { display: flex }
+      .name { width: calc(100% - 25px); color: var(--gray) }
+      .togglable .name { color: var(--red) }
+      .togglable { cursor: pointer }
+      .chevron:after { content: '\25B4'; font-size: 1.5em }
+      .collapsed .name, .json { color: var(--gray) }
+      .collapsed .deps { height: 0 }
+      .collapsed .chevron:after { content: '\25BD'; font-size: 1em }
+      .app-meta, .oss {
+        display: inline-block;
+        padding: 10px 15px;
+      }
+      .oss {
+        width: 58px;
+        border-left: 1px solid var(--light-red);
+      }
+
+      ::-webkit-scrollbar {
+        width: 15px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #fbf9f9;
+        box-shadow: inset 0 0 8px #eac8c8;
+        border-radius: 8px;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #bb1b1b;
+        background-clip: content-box;
+        border: 3px solid transparent;
+        border-radius: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h2>{{ data.path }}</h2>
+    </header>
+    <main>
+      <aside class="toggles">
+        <div id="toggle-collapse" class="toggle-btn"></div>
+        <div id="toggle-json" class="toggle-btn"></div>
+      </aside>
+      <div class="wrapper">
+      <div class="slabs container">
+        {%- for entry in data.data -%}
+          {% assign mtime = entry[1]['mtime'] -%}
+          {% assign deps = entry[1]['deps'] -%}
+          {%- if deps.size != 0 %}
+          <div class="entry togglable">
+            <div class="path" title="last modified at: {{ mtime }}; {{ deps.size }} dependencies">
+              <div class="name">{{ entry[0] }}</div>
+              <span class="chevron"></span>
+            </div>
+            <div class="deps">
+              <ul>
+              {%- for dependency in deps %}
+                <li>{{ dependency }}</li>
+              {%- endfor %}
+              </ul>
+            </div>
+          </div>
+          {%- else %}
+          <div class="entry">
+            <div class="path" title="last modified at: {{ mtime }}; no dependencies">
+              <div class="name">{{ entry[0] }}</div>
+            </div>
+          </div>
+          {%- endif -%}
+        {%- endfor %}
+      </div>
+      <div class="json container hidden">
+        <pre>{{ data.json }}</pre>
+      </div>
+      </div>
+    </main>
+    <footer>
+      <div class="footer-contents">
+        <div class="app-meta">
+          <div>{{ app.name }}</div>
+          <div>v{{ app.version }}</div>
+        </div>
+        <div class="oss">
+          <a href="https://github.com/ashmaroli/jmv" title="Source code at GitHub">
+            <svg viewBox="0 0 16 16">
+              <path fill="currentcolor" d="M7.999,0.431c-4.285,0-7.76,3.474-7.76,7.761 c0,3.428,2.223,6.337,5.307,7.363c0.388,0.071,0.53-0.168,0.53-0.374c0-0.184-0.007-0.672-0.01-1.32 c-2.159,0.469-2.614-1.04-2.614-1.04c-0.353-0.896-0.862-1.135-0.862-1.135c-0.705-0.481,0.053-0.472,0.053-0.472 c0.779,0.055,1.189,0.8,1.189,0.8c0.692,1.186,1.816,0.843,2.258,0.645c0.071-0.502,0.271-0.843,0.493-1.037 C4.86,11.425,3.049,10.76,3.049,7.786c0-0.847,0.302-1.54,0.799-2.082C3.768,5.507,3.501,4.718,3.924,3.65 c0,0,0.652-0.209,2.134,0.796C6.677,4.273,7.34,4.187,8,4.184c0.659,0.003,1.323,0.089,1.943,0.261 c1.482-1.004,2.132-0.796,2.132-0.796c0.423,1.068,0.157,1.857,0.077,2.054c0.497,0.542,0.798,1.235,0.798,2.082 c0,2.981-1.814,3.637-3.543,3.829c0.279,0.24,0.527,0.713,0.527,1.437c0,1.037-0.01,1.874-0.01,2.129 c0,0.208,0.14,0.449,0.534,0.373c3.081-1.028,5.302-3.935,5.302-7.362C15.76,3.906,12.285,0.431,7.999,0.431z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </footer>
+    <script>
+      const togglables = document.getElementsByClassName('togglable');
+      const toggleClassName = 'collapsed';
+      for (entry of togglables) {
+        entry.addEventListener('click', function() {
+          this.classList.toggle(toggleClassName);
+        });
+      }
+      document.getElementById('toggle-collapse').addEventListener(
+        'click', function() {
+          this.classList.toggle(toggleClassName);
+          if (this.classList.contains(toggleClassName)) {
+            for (entry of togglables) { entry.classList.add(toggleClassName); }
+          } else {
+            for (entry of togglables) { entry.classList.remove(toggleClassName); }
+          }
+        }
+      );
+      document.getElementById('toggle-json').addEventListener(
+        'click', function() {
+          this.classList.toggle('active');
+          document.getElementsByClassName('slabs')[0].classList.toggle('hidden');
+          document.getElementsByClassName('json')[0].classList.toggle('hidden');
+        }
+      );
+    </script>
+  </body>
+</html>

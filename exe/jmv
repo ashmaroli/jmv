@@ -1,0 +1,44 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require_relative '../lib/jmv'
+require 'optparse'
+
+options = {}
+option_parser = OptionParser.new do |opts|
+  opts.banner = <<~TEXT
+
+    Jekyll Metadata file Viewer (JMV) - v#{JMV::VERSION}
+    ------------------------------------------
+
+    Serves contents of the metadata file as a local webpage
+
+    Usage:
+      jmv [<options>]
+
+  TEXT
+
+  opts.on('-s', '--source DIR', 'Configure metadata file location. Default: current dir') do |source|
+    options[:source] = source
+  end
+
+  opts.on('-p', '--port PORT', 'Configure server port. Default: 3000') do |port|
+    options[:port] = port
+  end
+
+  opts.on('-h', '--help', 'Show this message') do |help|
+    puts opts
+    exit
+  end
+end
+
+begin
+  option_parser.parse!
+rescue OptionParser::InvalidOption => e
+  puts ''
+  puts "  Error! #{e}"
+  puts '  Please run `jmv --help` to view available options.'
+  exit
+end
+
+JMV.start(options)
